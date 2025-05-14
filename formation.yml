@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Budgets for alart configuration
+Parameters:
+  ApplicationArn:
+    Type: String
+    Description: myApplication ServiceCatalog application ARN
+  ApplicationTag:
+    Type: String
+    Description: myApplication Resource Group application tag
+  TargetEmail:
+    Type: String
+    Description: Notification target Email 
+  BudgetAmount:
+    Type: Number
+    Description: How much you can spend in USD
+    Default: '100'
+Resources:
+  AppAssoc:
+    Type: AWS::ServiceCatalogAppRegistry::ResourceAssociation
+    Properties:
+      Application: !Ref ApplicationArn
+      Resource: !Ref AWS::StackId
+      ResourceType: CFN_STACK
+  Budget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref BudgetAmount
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 80
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - Address: !Ref TargetEmail
+              SubscriptionType: EMAIL
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - Address: !Ref TargetEmail
+              SubscriptionType: EMAIL
+      ResourceTags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Budget"
+        - Key: AppManagerCFNStackKey
+          Value: !Ref AWS::StackName
+        - Key: awsApplication
+          Value: !Ref ApplicationTag
