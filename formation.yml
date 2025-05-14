@@ -30,6 +30,7 @@ Resources:
         BudgetLimit:
           Amount: !Ref BudgetAmount
           Unit: USD
+        BudgetName: !Sub "${AWS::StackName}-Budget"
       NotificationsWithSubscribers:
         - Notification:
             NotificationType: ACTUAL
